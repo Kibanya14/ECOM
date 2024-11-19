@@ -4,6 +4,10 @@ from django.core.paginator import Paginator
 from django_countries import countries
 from django.contrib.admin.views.decorators import staff_member_required
 import json
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
 
 
 def index(request):
@@ -108,6 +112,19 @@ def confirmation(request, order_id):
     }
 
     return render(request, 'shop/confirmation.html', context)
+
+def download_invoice(request, order_id):
+    commande = get_object_or_404(Commande, id=order_id)
+    products = commande.produits.all()
+
+    # Créer un template pour le PDF
+    html_string = render_to_string('invoice.html', {'order': commande, 'products': products})
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{commande.id}.pdf"'
+    return response
 
 
 from .models import Testimonial
