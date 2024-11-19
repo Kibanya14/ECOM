@@ -79,6 +79,7 @@ class Commande(models.Model):
     address = models.CharField(max_length=200)
     ville = models.CharField(max_length=200)
     pays = CountryField()
+    produits = models.ManyToManyField(Product, related_name='commandes')
     date_commande = models.DateTimeField(auto_now_add=True)
 
     class Meta:
