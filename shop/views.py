@@ -4,13 +4,6 @@ from django.core.paginator import Paginator
 from django_countries import countries
 from django.contrib.admin.views.decorators import staff_member_required
 import json
-from django.http import HttpResponse
-from weasyprint import HTML  # Pour générer des PDF
-from .models import Testimonial
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
-from django.shortcuts import render
-from django.template.loader import render_to_string
 
 
 def index(request):
@@ -69,17 +62,16 @@ def checkout(request):
         address = request.POST.get('address')
         ville = request.POST.get('ville')
         pays = request.POST.get('pays')
-        
+
         # Valider le numéro de téléphone
         if not telephone.isdigit() or len(telephone) < 9 or len(telephone) > 15:
             return render(request, 'shop/checkout.html', {
                 'error_message': 'Le numéro de téléphone doit contenir entre 9 et 15 chiffres.',
                 'countries': countries
             })
-        
+
         # Créer une nouvelle instance de la commande
         com = Commande(
-            items=items,
             total=total,
             nom=nom,
             email=email,
@@ -90,39 +82,37 @@ def checkout(request):
             pays=pays
         )
         com.save()
-        return redirect('confirmation')
+
+        # Ajoutez les produits à la commande (vous devez avoir une logique pour récupérer les IDs des produits)
+        product_ids = json.loads(items)  # Supposons que vous stockez les IDs des produits dans `items`
+        for product_id in product_ids:
+            product = get_object_or_404(Product, id=product_id)
+            com.produits.add(product)
+
+        return redirect('confirmation', order_id=com.id)  # Redirigez vers la confirmation avec l'ID de la commande
 
     return render(request, 'shop/checkout.html', {'countries': countries})
-
 
 def confirmation(request, order_id):
     # Récupérer la commande spécifique par ID
     commande = get_object_or_404(Commande, id=order_id)
-    
+
     # Récupérer les informations de la commande
     name = commande.nom
-    products = commande.produits.all()  # Supposons que vous ayez une relation avec les produits
+    products = commande.produits.all()  # Récupérer tous les produits associés à cette commande
 
     context = {
         'name': name,
         'products': products,
         'order': commande,
     }
-    
+
     return render(request, 'shop/confirmation.html', context)
 
-def download_invoice(request, order_id):
-    commande = get_object_or_404(Commande, id=order_id)
-    products = commande.produits.all()
 
-    # Créer un template pour le PDF
-    html_string = render_to_string('invoice.html', {'order': commande, 'products': products})
-    html = HTML(string=html_string)
-    pdf = html.write_pdf()
-
-    response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="invoice_{commande.id}.pdf"'
-    return response
+from .models import Testimonial
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 def forum(request):
     testimonials = Testimonial.objects.all().order_by('-created_at')
