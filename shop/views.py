@@ -4,6 +4,13 @@ from django.core.paginator import Paginator
 from django_countries import countries
 from django.contrib.admin.views.decorators import staff_member_required
 import json
+from django.http import HttpResponse
+from weasyprint import HTML  # Pour générer des PDF
+from .models import Testimonial
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.shortcuts import render
+from django.template.loader import render_to_string
 
 
 def index(request):
@@ -87,16 +94,34 @@ def checkout(request):
 
     return render(request, 'shop/checkout.html', {'countries': countries})
 
-def confimation(request):
-    info = Commande.objects.all()[:1]
-    for item in info:
-        name = item.nom
-    return render(request, 'shop/confirmation.html', {'name': name}) 
+def confirmation(request, order_id):
+    # Récupérer la commande spécifique par ID
+    commande = get_object_or_404(Commande, id=order_id)
+    
+    # Récupérer les informations de la commande
+    name = commande.nom
+    products = commande.produits.all()  # Supposons que vous ayez une relation avec les produits
 
+    context = {
+        'name': name,
+        'products': products,
+        'order': commande,
+    }
+    
+    return render(request, 'shop/confirmation.html', context)
 
-from .models import Testimonial
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
+def download_invoice(request, order_id):
+    commande = get_object_or_404(Commande, id=order_id)
+    products = commande.produits.all()
+
+    # Créer un template pour le PDF
+    html_string = render_to_string('invoice.html', {'order': commande, 'products': products})
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{commande.id}.pdf"'
+    return response
 
 def forum(request):
     testimonials = Testimonial.objects.all().order_by('-created_at')

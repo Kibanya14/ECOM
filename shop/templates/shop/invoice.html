@@ -1,0 +1,68 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture - Commande {{ order.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Facture pour la commande {{ order.id }}</h1>
+
+<h2>Détails de la commande</h2>
+<p><strong>Nom du client :</strong> {{ order.nom }}</p>
+<p><strong>Date de la commande :</strong> {{ order.date_commande }}</p>
+
+<h2>Produits commandés :</h2>
+<table>
+    <tr>
+        <th>Nom du produit</th>
+        <th>Prix unitaire</th>
+        <th>Quantité</th>
+        <th>Total</th>
+    </tr>
+    {% for product in products %}
+    <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.price }} $</td>
+        <td>{{ product.quantity }}</td> <!-- Assurez-vous que vous avez une quantité dans votre modèle -->
+        <td>{{ product.price|multiply:product.quantity }} $</td> <!-- Vous devez définir un filtre 'multiply' -->
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Total : {{ order.total_price }} $</h3>
+
+</body>
+</html>

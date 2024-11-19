@@ -7,26 +7,21 @@
         Merci de nous faire confiance à la société Manga's Store Mr/Mrs {{ name }}. 
         Nous avons reçu votre commande et vous serez livré dans un délai convenable.
     </h4>
+
+    <h5 class="text-lg font-bold mt-4">Produits commandés :</h5>
+    <ul class="mt-2">
+        {% for product in products %}
+            <li>{{ product.name }} - {{ product.price }} €</li>
+        {% endfor %}
+    </ul>
+
     <div class="mt-6 text-center">
-        <a href="{% url 'home' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        <a href="{% url 'download_invoice' order.id %}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+            Télécharger la facture en PDF
+        </a>
+        <a href="{% url 'home' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">
             <i class="fas fa-home mr-2"></i>Retour à l'accueil
         </a>
     </div>
 </div>
-{% endblock %}
-
-{% block js %}
-<script>
-    // JavaScript spécifique à la page de confirmation
-    console.log("Script de la page de confirmation chargé");
-
-    function afficherMessageRemerciement() {
-        alert("Merci pour votre achat !");
-    }
-
-    // Appeler la fonction au chargement de la page
-    window.onload = afficherMessageRemerciement;
-
-    // Autres fonctions spécifiques à la page de confirmation
-</script>
 {% endblock %}
