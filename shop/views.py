@@ -94,6 +94,7 @@ def checkout(request):
 
     return render(request, 'shop/checkout.html', {'countries': countries})
 
+
 def confirmation(request, order_id):
     # Récupérer la commande spécifique par ID
     commande = get_object_or_404(Commande, id=order_id)

@@ -57,7 +57,7 @@
         <td>{{ product.name }}</td>
         <td>{{ product.price }} $</td>
         <td>{{ product.quantity }}</td> <!-- Assurez-vous que vous avez une quantité dans votre modèle -->
-        <td>{{ product.price|multiply:product.quantity }} $</td> <!-- Vous devez définir un filtre 'multiply' -->
+        <td>{{ product.price|multiply:product.quantity }} $</td> <!-- Utilisation du filtre 'multiply' -->
     </tr>
     {% endfor %}
 </table>
