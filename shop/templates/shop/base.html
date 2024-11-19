@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga's Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100">
+    <header class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="{% static 'img/manga.png' %}" alt="Logo" class="h-8 w-8 mr-2 rounded-full object-cover">
+                    <a href="{% url 'home' %}" class="text-xl font-bold text-gray-800">Manga's Store</a>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <a href="{% url 'home' %}" class="text-gray-800 hover:text-gray-600 mx-3">Accueil</a>
+                    <a href="{% url 'home' %}" class="text-gray-800 hover:text-gray-600 mx-3">Produits</a>
+                    <div x-data="categoriesDropdown()" class="relative">
+                        <button @click="toggle" class="text-gray-800 hover:text-gray-600 mx-3">
+                            Catégories <i class="fas fa-chevron-down ml-1"></i>
+                        </button>
+                        <div x-show="open" @click.away="close" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
+                            {% for category in categories %}
+                            <a href="{% url 'home' %}?category={{ category.id }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ category.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="{% url 'forum' %}" class="text-gray-800 hover:text-gray-600 mx-3">Forum</a>
+                    <a href="{% url 'about' %}" class="text-gray-800 hover:text-gray-600 mx-3">À propos</a>
+                </div>
+                <div class="flex items-center">
+                    <div class="relative mr-4">
+                        <button id="panier" class="text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">
+                          <i class="fas fa-shopping-cart"></i>
+                          <span id="panier-count" class="bg-red-500 text-white rounded-full px-2 py-1 text-xs">0</span>
+                        </button>
+                        <div id="panier-popover" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-20 p-4">
+                            <div id="panier-content"></div>
+                        </div>
+                    </div>
+                    <button id="mobile-menu-button" class="md:hidden text-gray-800">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <!-- Menu mobile -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white">
+            <a href="{% url 'home' %}" class="block py-2 px-4 text-sm hover:bg-gray-200">Accueil</a>
+            <a href="{% url 'home' %}" class="block py-2 px-4 text-sm hover:bg-gray-200">Produits</a>
+            <div x-data="categoriesDropdown()" class="relative">
+                <button @click="toggle" class="w-full text-left block py-2 px-4 text-sm hover:bg-gray-200">
+                    Catégories <i class="fas fa-chevron-down ml-1"></i>
+                </button>
+                <div x-show="open" class="bg-gray-100">
+                    {% for category in categories %}
+                    <a href="{% url 'home' %}?category={{ category.id }}" class="block py-2 px-6 text-sm hover:bg-gray-200">{{ category.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="{% url 'forum' %}" class="block py-2 px-4 text-sm hover:bg-gray-200">Forum</a>
+            <a href="{% url 'about' %}" class="block py-2 px-4 text-sm hover:bg-gray-200">À propos</a>
+        </div>
+    </header>
+
+    <!-- Ajustement de la marge supérieure pour compenser la hauteur de la navbar -->
+    <main class="container mx-auto px-6 py-[10spx] flex-grow mt-[30px]"> <!-- Réduction de l'espace entre navbar et contenu -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex flex-wrap">
+                <div class="w-full md:w-1/4 text-center md:text-left">
+                    <h5 class="uppercase mb-6 font-bold">À propos</h5>
+                    <ul class="mb-4">
+                        <li class="mt-2">
+                            <a href="{% url 'about' %}" class="hover:underline text-gray-400 hover:text-white">Notre histoire</a>
+                        </li>
+                        <li class="mt-2">
+                            <a href="#" class="hover:underline text-gray-400 hover:text-white">Équipe</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/4 text-center md:text-left">
+                    <h5 class="uppercase mb-6 font-bold">Aide</h5>
+                    <ul class="mb-4">
+                        <li class="mt-2">
+                            <a href="#" class="hover:underline text-gray-400 hover:text-white">FAQ</a>
+                        </li>
+                        <li class="mt-2">
+                            <a href="#" class="hover:underline text-gray-400 hover:text-white">Livraison</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/4 text-center md:text-left">
+                    <h5 class="uppercase mb-6 font-bold">Contact</h5>
+                    <ul class="mb-4">
+                        <li class="mt-2">
+                            <a href="#" class="hover:underline text-gray-400 hover:text-white">Email</a>
+                        </li>
+                        <li class="mt-2">
+                            <a href="#" class="hover:underline text-gray-400 hover:text-white">Téléphone</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/4 text-center md:text-left">
+                    <h5 class="uppercase mb-6 font-bold">Suivez-nous</h5>
+                    <div class="flex justify-center md:justify-start">
+                        <a href="#" class="hover:text-white mr-6">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="hover:text-white mr-6">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container mx-auto px-6 py-3 flex justify-center items-center">
+            <div class="text-sm text-gray-400">
+                © <span id="current-year"></span> Manga's Store. Tous droits réservés.
+            </div>
+        </div>
+    </footer>
+
+    {% block js %}{% endblock %}
+
+    <script>
+    function categoriesDropdown() {
+        return {
+            open: false,
+            toggle() {
+                this.open = !this.open;
+            },
+            close() {
+                this.open = false;
+            }
+        }
+    }
+
+    // Fonction pour mettre à jour l'année
+    function updateYear() {
+        const yearSpan = document.getElementById('current-year');
+        const currentYear = new Date().getFullYear();
+        yearSpan.textContent = currentYear;
+    }
+
+    // Appeler la fonction au chargement de la page
+    document.addEventListener('DOMContentLoaded', updateYear);
+
+    // Gestion du menu mobile
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const mobileMenu = document.getElementById("mobile-menu");
+
+    mobileMenuButton.addEventListener("click", () => {
+        mobileMenu.classList.toggle("hidden");
+    
+
+    window.addEventListener('resize', adjustForMobile);
+    document.addEventListener('DOMContentLoaded', adjustForMobile);
+
+    });
+    </script>
+</body>
+</html>

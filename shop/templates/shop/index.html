@@ -1,0 +1,210 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+        {% if selected_category %}
+            Produits dans la catégorie : {{ selected_category.name }}
+        {% else %}
+            Tous nos produits
+        {% endif %}
+    </h1>
+
+    <div class="mb-8">
+        <form class="flex items-center" method="GET" action="{% url 'home' %}">
+            <input type="search" placeholder="Rechercher un produit..." name="item-nom" class="flex-grow p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <button type="submit" class="bg-blue-500 text-white p-3 rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {% for product in product_objects %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl">
+            <img src="{{ product.image_src }}" alt="{{ product.title }}" class="w-full h-56 object-cover object-center">
+            <div class="p-6">
+                <h3 id="aa{{ product.id }}" class="font-bold text-xl mb-2 text-gray-800 truncate">{{ product.title }}</h3>
+                <p id="price{{ product.id }}" class="text-blue-600 font-bold text-lg mb-4">${{ product.price }} {{ product.discount_percentage|floatformat:0 }}% de réduction</p>
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= product.rating %}
+                                <i class="fas fa-star"></i>
+                            {% elif forloop.counter <= product.rating|add:0.5 %}
+                                <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="ml-2 text-gray-600">{{ product.display_rating }} ({{ product.number_of_reviews }} avis)</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'detail' product.id %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition duration-300 ease-in-out">
+                        <i class="fas fa-eye mr-2"></i> Voir
+                    </a>
+                    <button onclick="ajouterAuPanier('{{ product.id }}', '{{ product.title }}', {{ product.price }}, {{ product.discount_percentage }})" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out">
+                        <i class="fas fa-cart-plus mr-2"></i> Ajouter
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-12 flex justify-center">
+        <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+            {% if product_objects.has_previous %}
+                <a href="?page={{ product_objects.previous_page_number }}{% if selected_category %}&category={{ selected_category.id }}{% endif %}" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Précédent</span>
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                {{ product_objects.number }}
+            </span>
+
+            {% if product_objects.has_next %}
+                <a href="?page={{ product_objects.next_page_number }}{% if selected_category %}&category={{ selected_category.id }}{% endif %}" class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Suivant</span>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    let panier = JSON.parse(localStorage.getItem('panier')) || {};
+
+    function updatePanierDisplay() {
+        const panierCount = document.getElementById("panier-count");
+        const panierContent = document.getElementById("panier-content");
+        
+        panierCount.textContent = Object.keys(panier).length;
+        
+        let content = "<h5 class='text-lg font-bold mb-2'>Votre panier</h5><ul class='space-y-2'>";
+        let total = 0;
+        
+        for (let id in panier) {
+            let quantite = panier[id][0];
+            let nom = panier[id][1];
+            let prix = panier[id][2];
+            let discount = panier[id][3];
+            
+            // Calcul du prix avec réduction
+            let prixReduit = prix;
+            if (quantite > 1) {
+                prixReduit = prix - (prix * (discount / 100) * (quantite - 1));
+            }
+            prixReduit = Math.max(prixReduit, 0);
+            
+            let sousTotal = prixReduit * quantite;
+            total += sousTotal;
+
+            content += `
+                <li class='flex flex-col border-b pb-2'>
+                    <div class='flex justify-between items-center'>
+                        <span class='font-semibold'>${nom}</span>
+                        <span class='text-blue-600'>$${prixReduit.toFixed(2)}</span>
+                    </div>
+                    <div class='flex justify-between items-center mt-1'>
+                        <div class="flex items-center">
+                            <button class="bg-gray-200 px-2 py-1 rounded-l" onclick="modifierQuantite('${id}', -1)">-</button>
+                            <span class="bg-blue-500 text-white px-2 py-1 text-xs">${quantite}</span>
+                            <button class="bg-gray-200 px-2 py-1 rounded-r" onclick="modifierQuantite('${id}', 1)">+</button>
+                        </div>
+                        <span class='text-sm'>Sous-total: $${sousTotal.toFixed(2)}</span>
+                        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs" onclick="supprimerProduit('${id}')">Supprimer</button>
+                    </div>
+                </li>
+            `;
+        }
+        
+        content += `
+            </ul>
+            <div class='mt-4 pt-2 border-t border-gray-200'>
+                <p class='font-bold text-xl'>Total: $${total.toFixed(2)}</p>
+            </div>
+            <div class="mt-4 flex justify-between">
+                <button onclick="viderPanier()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs flex items-center">
+                    <i class="fas fa-trash-alt mr-1"></i>
+                    Vider le panier
+                </button>
+                <a href='/checkout' class='bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-xs flex items-center'>
+                    <i class="fas fa-shopping-cart mr-1"></i>
+                    Passer Commander
+                </a>
+            </div>
+        `;
+        
+        panierContent.innerHTML = content;
+    }
+
+    function ajouterAuPanier(productId, nom, prix, discount) {
+        if (panier[productId]) {
+            panier[productId][0]++;
+        } else {
+            panier[productId] = [1, nom, prix, discount];
+        }
+        localStorage.setItem('panier', JSON.stringify(panier));
+        updatePanierDisplay();
+    }
+
+    function modifierQuantite(itemId, delta) {
+        if (panier[itemId]) {
+            panier[itemId][0] += delta;
+            if (panier[itemId][0] <= 0) {
+                supprimerProduit(itemId);
+            } else {
+                localStorage.setItem('panier', JSON.stringify(panier));
+                updatePanierDisplay();
+            }
+        }
+    }
+
+    function supprimerProduit(itemId) {
+        if (panier[itemId]) {
+            delete panier[itemId];
+            localStorage.setItem('panier', JSON.stringify(panier));
+            updatePanierDisplay();
+        }
+    }
+
+    function viderPanier() {
+        if (confirm("Êtes-vous sûr de vouloir vider votre panier ?")) {
+            panier = {};
+            localStorage.setItem('panier', JSON.stringify(panier));
+            updatePanierDisplay();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const panierButton = document.getElementById('panier');
+        const panierPopover = document.getElementById('panier-popover');
+
+        panierButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            panierPopover.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!panierButton.contains(event.target) && !panierPopover.contains(event.target)) {
+                panierPopover.classList.add('hidden');
+            }
+        });
+
+        updatePanierDisplay();
+    });
+
+    // Empêcher la fermeture du panier lors des modifications
+    document.getElementById('panier-content').addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+</script>
+{% endblock %}

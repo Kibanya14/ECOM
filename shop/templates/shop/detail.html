@@ -1,0 +1,87 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="md:w-1/2">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="w-full h-full object-cover" alt="{{ product.title }}">
+            {% elif product.image_url %}
+                <img src="{{ product.image_url }}" class="w-full h-full object-cover" alt="{{ product.title }}">
+            {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                    <span class="text-gray-500">Aucune image disponible</span>
+                </div>
+            {% endif %}
+        </div>
+        <div class="md:w-1/2 p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ product.title }}</h1>
+            <p class="text-2xl font-semibold text-blue-600 mb-4">${{ product.price }}</p>
+            {% if product.discount_percentage > 0 %}
+                <p class="text-lg text-green-600 mb-4">{{ product.discount_percentage }}% de réduction pour les achats en quantité</p>
+            {% endif %}
+            <div class="flex items-center mb-4">
+                <div class="flex text-yellow-400">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= product.rating %}
+                            <i class="fas fa-star"></i>
+                        {% elif forloop.counter <= product.rating|add:0.5 %}
+                            <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="ml-2 text-gray-600">{{ product.display_rating }} ({{ product.number_of_reviews }} avis)</span>
+            </div>
+            <div class="bg-gray-100 rounded-lg p-4 mb-6">
+                <p class="text-gray-700">{{ product.description }}</p>
+            </div>
+            <form action="{% url 'checkout' %}" method="POST" class="mb-4">
+                {% csrf_token %}
+                <input type="hidden" name="items" value="{{ product.title }}">
+                <input type="hidden" name="total" value="{{ product.price }}">
+                <input type="hidden" name="nom" value="Jonas Kibanya">
+                <input type="hidden" name="email" value="jonas@example.com">
+                <input type="hidden" name="telephone" value="0813091409">
+                <input type="hidden" name="address" value="92, Rue de l'Adresse">
+                <input type="hidden" name="ville" value="Ville">
+                <input type="hidden" name="pays" value="Pays">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    <i class="fas fa-shopping-cart mr-2"></i>Acheter maintenant
+                </button>
+            </form>
+            <button onclick="ajouterAuPanier('{{ product.id }}', '{{ product.title }}', {{ product.price }}, {{ product.discount_percentage }})" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out">
+                <i class="fas fa-cart-plus mr-2"></i>Ajouter au panier
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    console.log("Script de la page de détail chargé");
+
+    function ajouterAuPanier(productId, title, price, discountPercentage) {
+        console.log("Produit ajouté au panier : " + productId);
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        
+        if (panier[productId]) {
+            panier[productId][0]++;
+        } else {
+            panier[productId] = [1, title, price, discountPercentage];
+        }
+        
+        localStorage.setItem('panier', JSON.stringify(panier));
+        alert("Produit ajouté au panier !");
+        
+        // Mettre à jour l'affichage du panier si nécessaire
+        if (typeof updatePanierDisplay === 'function') {
+            updatePanierDisplay();
+        }
+    }
+
+    // Autres fonctions spécifiques à la page de détail
+</script>
+{% endblock %}
