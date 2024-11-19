@@ -119,7 +119,7 @@ def download_invoice(request, order_id):
     products = commande.produits.all()  # Récupérer tous les produits associés à cette commande
 
     # Créer un template pour le PDF
-    html_string = render_to_string('invoice.html', {'order': commande, 'products': products})
+    html_string = render_to_string('shop/invoice.html', {'order': commande, 'products': products})
     html = HTML(string=html_string)
     pdf = html.write_pdf()
 
