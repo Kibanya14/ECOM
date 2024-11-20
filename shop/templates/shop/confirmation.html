@@ -22,23 +22,24 @@
             {% for product in products %}
             <tr>
                 <td class="py-2 px-4 border-b">{{ product.title }}</td>
-                <td class="py-2 px-4 border-b">{{ product.price }} €</td>
-                <td class="py-2 px-4 border-b">{{ product.quantity }}</td> <!-- Assurez-vous que vous avez une quantité dans votre modèle -->
-                <td class="py-2 px-4 border-b">{{ product.price|multiply:product.quantity }} €</td> <!-- Utilisation du filtre 'multiply' -->
+                <td class="py-2 px-4 border-b">{{ product.price }} $</td>
+                <td class="py-2 px-4 border-b">{{ product.quantity }}</td> <!-- Utilisez la quantité calculée -->
+                <td class="py-2 px-4 border-b">{{ product.total_price }} $</td> <!-- Utilisez le prix total calculé -->
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <h5 class="text-lg font-bold mt-4">Montant total : {{ total_amount }} €</h5>
+    <h5 class="text-lg font-bold mt-4">Montant total : {{ total_amount }} $</h5>
 
     <div class="mt-6 text-center">
         <a href="{% url 'download_invoice' order.id %}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
             <i class="fas fa-download mr-2"></i>Télécharger la facture en PDF
         </a>
         <a href="{% url 'home' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">
-            <i class="fas fa-home mr-2"></i>Retour à l'accueil
+            Retour à l'accueil
         </a>
     </div>
+
 </div>
 {% endblock %}

@@ -1,3 +1,4 @@
+{% load math_filters %}
 {% load custom_filters %}
 <!DOCTYPE html>
 <html lang="fr">
@@ -55,14 +56,14 @@
     {% for product in products %}
     <tr>
         <td>{{ product.title }}</td> <!-- Assurez-vous que vous utilisez le bon attribut -->
-        <td>{{ product.price }} €</td>
+        <td>{{ product.price }} $</td>
         <td>{{ product.quantity }}</td> <!-- Assurez-vous que vous avez une quantité dans votre modèle -->
-        <td>{{ product.price|multiply:product.quantity }} €</td> <!-- Utilisation du filtre 'multiply' -->
+        <td>{{ product.price|multiply:product.quantity }} $</td> <!-- Utilisation du filtre 'multiply' -->
     </tr>
     {% endfor %}
 </table>
 
-<h3>Total : {{ order.total }} €</h3>
+<h3>Total : {{ order.total }} $</h3>
 
 </body>
 </html>

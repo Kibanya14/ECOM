@@ -105,12 +105,24 @@ def confirmation(request, order_id):
     name = commande.nom
     products = commande.produits.all()  # Récupérer tous les produits associés à cette commande
 
-    # Calculer le total des produits
-    total_amount = sum(product.price for product in products)
+    # Calculer le total pour chaque produit et le total général
+    product_details = []
+    total_amount = 0
+
+    for product in products:
+        quantity = 1  # Remplacez ceci par la quantité réelle si disponible
+        total_price = product.price * quantity
+        product_details.append({
+            'title': product.title,
+            'price': product.price,
+            'quantity': quantity,
+            'total_price': total_price,
+        })
+        total_amount += total_price
 
     context = {
         'name': name,
-        'products': products,
+        'products': product_details,
         'order': commande,
         'total_amount': total_amount,
     }
