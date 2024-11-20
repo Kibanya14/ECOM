@@ -71,7 +71,7 @@
                 </label>
                 <select name="pays" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="pays" required>
                     {% for code, name in countries %}
-                        <option value="{{ code }}">{{ name }}</option>
+                        <option value="{{ code }}">{{ code }} - {{ name }}</option>  <!-- Affiche le code et le nom -->
                     {% endfor %}
                 </select>
             </div>

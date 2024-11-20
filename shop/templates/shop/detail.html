@@ -41,12 +41,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="items" value="{{ product.title }}">
                 <input type="hidden" name="total" value="{{ product.price }}">
-                <input type="hidden" name="nom" value="Jonas Kibanya">
-                <input type="hidden" name="email" value="jonas@example.com">
-                <input type="hidden" name="telephone" value="0813091409">
-                <input type="hidden" name="address" value="92, Rue de l'Adresse">
-                <input type="hidden" name="ville" value="Ville">
-                <input type="hidden" name="pays" value="Pays">
+                <!-- Autres champs cachés -->
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
                     <i class="fas fa-shopping-cart mr-2"></i>Acheter maintenant
                 </button>
@@ -54,9 +49,23 @@
             <button onclick="ajouterAuPanier('{{ product.id }}', '{{ product.title }}', {{ product.price }}, {{ product.discount_percentage }})" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out">
                 <i class="fas fa-cart-plus mr-2"></i>Ajouter au panier
             </button>
+
+            <!-- Popover pour afficher le contenu du panier -->
+            <div id="cart-popover" style="display:none;" class="absolute bg-white shadow-lg rounded-lg p-4 mt-2 z-10">
+                <h3 class="font-bold">Contenu du Panier</h3>
+                <ul id="cart-items-list" class="mt-2"></ul>
+                <button onclick="toggleCartPopover()" class="mt-2 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Fermer</button>
+            </div>
         </div>
     </div>
+
+    <!-- Bouton pour afficher le popover -->
+    <button onclick="toggleCartPopover()" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        Afficher le Panier
+    </button>
+
 </div>
+
 {% endblock %}
 
 {% block js %}
@@ -76,10 +85,39 @@
         localStorage.setItem('panier', JSON.stringify(panier));
         alert("Produit ajouté au panier !");
         
-        // Mettre à jour l'affichage du panier si nécessaire
-        if (typeof updatePanierDisplay === 'function') {
-            updatePanierDisplay();
+        // Mettre à jour l'affichage du panier
+        updatePanierDisplay();
+    }
+
+    function updatePanierDisplay() {
+        const itemList = document.getElementById("cart-items-list");
+        itemList.innerHTML = '';  // Réinitialiser la liste
+
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        
+        for (let item in panier) {
+            let nom = panier[item][1];
+            let quantite = panier[item][0];
+            let prix = panier[item][2];
+            
+            // Calcul du prix avec réduction
+            let prixReduit = prix;
+            if (quantite > 1) {
+                prixReduit = prix - (prix * (panier[item][3] / 100) * (quantite - 1));
+            }
+            
+            let sousTotal = prixReduit * quantite;
+
+            let li = document.createElement('li');
+            li.className = "flex justify-between items-center border-b py-2 px-4";
+            li.innerHTML = `${nom} - Qté: ${quantite} - Prix unitaire: $${prixReduit.toFixed(2)} - Total: $${sousTotal.toFixed(2)}`;
+            itemList.appendChild(li);
         }
+    }
+
+    function toggleCartPopover() {
+        const popover = document.getElementById("cart-popover");
+        popover.style.display = (popover.style.display === "none" || popover.style.display === "") ? "block" : "none";
     }
 
     // Autres fonctions spécifiques à la page de détail
