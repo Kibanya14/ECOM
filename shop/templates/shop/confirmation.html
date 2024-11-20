@@ -9,18 +9,35 @@
     </h4>
 
     <h5 class="text-lg font-bold mt-4">Produits commandés :</h5>
-    <ul class="mt-2">
-        {% for product in products %}
-            <li>{{ product.name }} - {{ product.price }} €</li>
-        {% endfor %}
-    </ul>
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Nom du produit</th>
+                <th class="py-2 px-4 border-b">Prix unitaire</th>
+                <th class="py-2 px-4 border-b">Quantité</th>
+                <th class="py-2 px-4 border-b">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td class="py-2 px-4 border-b">{{ product.title }}</td>
+                <td class="py-2 px-4 border-b">{{ product.price }} €</td>
+                <td class="py-2 px-4 border-b">{{ product.quantity }}</td> <!-- Assurez-vous que vous avez une quantité dans votre modèle -->
+                <td class="py-2 px-4 border-b">{{ product.price|multiply:product.quantity }} €</td> <!-- Utilisation du filtre 'multiply' -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h5 class="text-lg font-bold mt-4">Montant total : {{ total_amount }} €</h5>
 
     <div class="mt-6 text-center">
         <a href="{% url 'download_invoice' order.id %}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-            Télécharger la facture en PDF
+            <i class="fas fa-download mr-2"></i>Télécharger la facture en PDF
         </a>
         <a href="{% url 'home' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">
-            Retour à l'accueil
+            <i class="fas fa-home mr-2"></i>Retour à l'accueil
         </a>
     </div>
 </div>

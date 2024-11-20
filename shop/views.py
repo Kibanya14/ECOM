@@ -105,10 +105,14 @@ def confirmation(request, order_id):
     name = commande.nom
     products = commande.produits.all()  # Récupérer tous les produits associés à cette commande
 
+    # Calculer le total des produits
+    total_amount = sum(product.price for product in products)
+
     context = {
         'name': name,
         'products': products,
         'order': commande,
+        'total_amount': total_amount,
     }
 
     return render(request, 'shop/confirmation.html', context)
