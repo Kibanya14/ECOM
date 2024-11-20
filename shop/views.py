@@ -134,8 +134,20 @@ def download_invoice(request, order_id):
     commande = get_object_or_404(Commande, id=order_id)
     products = commande.produits.all()  # Récupérer tous les produits associés à cette commande
 
+    # Créer une liste de détails des produits avec le prix total
+    product_details = []
+    for product in products:
+        quantity = 1  # Remplacez ceci par la quantité réelle si disponible
+        total_price = product.price * quantity
+        product_details.append({
+            'title': product.title,
+            'price': product.price,
+            'quantity': quantity,
+            'total_price': total_price,
+        })
+
     # Créer un template pour le PDF
-    html_string = render_to_string('shop/invoice.html', {'order': commande, 'products': products})
+    html_string = render_to_string('shop/invoice.html', {'order': commande, 'products': product_details})
     html = HTML(string=html_string)
     pdf = html.write_pdf()
 
