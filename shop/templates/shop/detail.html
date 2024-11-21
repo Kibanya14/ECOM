@@ -44,22 +44,9 @@
                 <i class="fas fa-cart-plus mr-2"></i>Ajouter au panier
             </button>
 
-            <!-- Popover pour afficher le contenu du panier -->
-            <div id="cart-popover" style="display:none;" class="absolute bg-white shadow-lg rounded-lg p-4 mt-2 z-10">
-                <h3 class="font-bold">Contenu du Panier</h3>
-                <ul id="cart-items-list" class="mt-2"></ul>
-                <button onclick="toggleCartPopover()" 
-                        class="mt-2 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Fermer</button>
-            </div>
-
+            <!-- Popover pour afficher le contenu du panier (déjà dans la navbar) -->
         </div>
     </div>
-
-    <!-- Bouton pour afficher le popover -->
-    <button onclick="toggleCartPopover()" 
-            class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-        Afficher le Panier
-    </button>
 
 </div>
 
@@ -67,57 +54,126 @@
 
 {% block js %}
 <script>
-    console.log("Script de la page de détail chargé");
-
-    function ajouterAuPanier(productId, title, price, discountPercentage) {
-        console.log("Produit ajouté au panier : " + productId);
-        let panier = JSON.parse(localStorage.getItem('panier')) || {};
-        
-        if (panier[productId]) {
-            panier[productId][0]++;
-        } else {
-            panier[productId] = [1, title, price, discountPercentage];
-        }
-        
-        localStorage.setItem('panier', JSON.stringify(panier));
-        alert("Produit ajouté au panier !");
-        
-        // Mettre à jour l'affichage du panier
-        updatePanierDisplay();
-    }
+    let panier = JSON.parse(localStorage.getItem('panier')) || {};
 
     function updatePanierDisplay() {
-        const itemList = document.getElementById("cart-items-list");
-        itemList.innerHTML = '';  // Réinitialiser la liste
-
-        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        const panierCount = document.getElementById("panier-count");
+        const panierContent = document.getElementById("panier-content");
         
-        for (let item in panier) {
-            let nom = panier[item][1];
-            let quantite = panier[item][0];
-            let prix = panier[item][2];
+        panierCount.textContent = Object.keys(panier).length;
+        
+        let content = "<h5 class='text-lg font-bold mb-2'>Votre panier</h5><ul class='space-y-2'>";
+        let total = 0;
+        
+        for (let id in panier) {
+            let quantite = panier[id][0];
+            let nom = panier[id][1];
+            let prix = panier[id][2];
+            let discount = panier[id][3];
             
             // Calcul du prix avec réduction
             let prixReduit = prix;
             if (quantite > 1) {
-                prixReduit = prix - (prix * (panier[item][3] / 100) * (quantite - 1));
+                prixReduit = prix - (prix * (discount / 100) * (quantite - 1));
             }
+            prixReduit = Math.max(prixReduit, 0);
             
             let sousTotal = prixReduit * quantite;
+            total += sousTotal;
 
-            let li = document.createElement('li');
-            li.className = "flex justify-between items-center border-b py-2 px-4";
-            li.innerHTML = `${nom} - Qté: ${quantite} - Prix unitaire: $${prixReduit.toFixed(2)} - Total: $${sousTotal.toFixed(2)}`;
-            itemList.appendChild(li);
+            content += `
+                <li class='flex flex-col border-b pb-2'>
+                    <div class='flex justify-between items-center'>
+                        <span class='font-semibold'>${nom}</span>
+                        <span class='text-blue-600'>$${prixReduit.toFixed(2)}</span>
+                    </div>
+                    <div class='flex justify-between items-center mt-1'>
+                        <div class="flex items-center">
+                            <button class="bg-gray-200 px-2 py-1 rounded-l" onclick="modifierQuantite('${id}', -1)">-</button>
+                            <span class="bg-blue-500 text-white px-2 py-1 text-xs">${quantite}</span>
+                            <button class="bg-gray-200 px-2 py-1 rounded-r" onclick="modifierQuantite('${id}', 1)">+</button>
+                        </div>
+                        <span class='text-sm'>Sous-total: $${sousTotal.toFixed(2)}</span>
+                        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs" onclick="supprimerProduit('${id}')">Supprimer</button>
+                    </div>
+                </li>
+            `;
+        }
+        
+        content += `
+            </ul>
+            <div class='mt-4 pt-2 border-t border-gray-200'>
+                <p class='font-bold text-xl'>Total: $${total.toFixed(2)}</p>
+            </div>
+            <div class="mt-4 flex justify-between">
+                <button onclick="viderPanier()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs flex items-center">
+                    <i class="fas fa-trash-alt mr-1"></i> Vider le panier
+                </button>
+                <a href='/checkout' class='bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-xs flex items-center'>
+                    <i class="fas fa-shopping-cart mr-1"></i> Passer Commande
+                </a>
+            </div>
+        `;
+        
+        panierContent.innerHTML = content;
+    }
+
+    function ajouterAuPanier(productId, nom, prix, discount) {
+        if (panier[productId]) {
+            panier[productId][0]++;
+        } else {
+            panier[productId] = [1, nom, prix, discount];
+        }
+        localStorage.setItem('panier', JSON.stringify(panier));
+        updatePanierDisplay();
+    }
+
+    function modifierQuantite(itemId, delta) {
+        if (panier[itemId]) {
+            panier[itemId][0] += delta;
+            if (panier[itemId][0] <= 0) {
+                supprimerProduit(itemId);
+            } else {
+                localStorage.setItem('panier', JSON.stringify(panier));
+                updatePanierDisplay();
+            }
         }
     }
 
-    function toggleCartPopover() {
-        const popover = document.getElementById("cart-popover");
-        popover.style.display = (popover.style.display === "none" || popover.style.display === "") ? "block" : "none";
+    function supprimerProduit(itemId) {
+        if (panier[itemId]) {
+            delete panier[itemId];
+            localStorage.setItem('panier', JSON.stringify(panier));
+            updatePanierDisplay();
+        }
     }
 
-    // Appeler la fonction pour mettre à jour l'affichage du panier au chargement de la page
-    document.addEventListener('DOMContentLoaded', updatePanierDisplay);
+    function viderPanier() {
+        if (confirm("Êtes-vous sûr de vouloir vider votre panier ?")) {
+            panier = {};
+            localStorage.setItem('panier', JSON.stringify(panier));
+            updatePanierDisplay();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const panierButton = document.getElementById('panier');
+        const panierPopover = document.getElementById('panier-popover');
+
+        // Mettre à jour l'affichage du contenu du panier au chargement de la page
+        updatePanierDisplay();
+
+        // Gestion de l'affichage du popover
+        panierButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            panierPopover.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!panierButton.contains(event.target) && !panierPopover.contains(event.target)) {
+                panierPopover.classList.add('hidden');
+            }
+        });
+    });
 </script>
 {% endblock %}
