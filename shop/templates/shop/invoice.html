@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facture - Commande {{ order.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,31 +39,48 @@
 </head>
 <body>
 
-<h1>Facture pour la commande {{ order.id }}</h1>
+<div class="container mx-auto p-6 bg-white shadow-lg rounded-lg">
+    <h1 class="text-3xl font-bold mb-4">Facture pour la commande {{ order.id }}</h1>
 
-<h2>Détails de la commande</h2>
-<p><strong>Nom du client :</strong> {{ order.nom }}</p>
-<p><strong>Date de la commande :</strong> {{ order.date_commande }}</p>
+    <h2 class="text-xl font-semibold">Détails de la commande</h2>
+    <p><strong>Nom du client :</strong> {{ order.nom }}</p>
+    <p><strong>Adresse :</strong> {{ order.address }}</p>
+    <p><strong>Téléphone :</strong> {{ order.telephone }}</p>
+    <p><strong>Date de la commande :</strong> {{ order.date_commande }}</p>
 
-<h2>Produits commandés :</h2>
-<table>
-    <tr>
-        <th>Nom du produit</th>
-        <th>Prix unitaire</th>
-        <th>Quantité</th>
-        <th>Total</th>
-    </tr>
-    {% for product in products %}
-    <tr>
-        <td>{{ product.title }}</td>
-        <td>{{ product.price }} $</td>
-        <td>{{ product.quantity }}</td> <!-- Utilisez la quantité calculée -->
-        <td>{{ product.total_price }} $</td> <!-- Utilisez le prix total calculé -->
-    </tr>
-    {% endfor %}
-</table>
+    <h2 class="text-xl font-semibold mt-4">Produits commandés :</h2>
+    <table class="mt-4">
+        <thead>
+            <tr>
+                <th class="border px-4 py-2">Nom du produit</th>
+                <th class="border px-4 py-2">Prix unitaire</th>
+                <th class="border px-4 py-2">Quantité</th>
+                <th class="border px-4 py-2">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td class="border px-4 py-2">{{ product.title }}</td>
+                <td class="border px-4 py-2">{{ product.price }} $</td>
+                <td class="border px-4 py-2">{{ product.quantity }}</td> <!-- Utilisez la quantité calculée -->
+                <td class="border px-4 py-2">{{ product.total_price }} $</td> <!-- Utilisez le prix total calculé -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<h3>Total : {{ order.total }} $</h3>
+    <h3 class="text-xl font-bold mt-4">Total : {{ order.total }} $</h3>
+
+    <!-- Footer avec les informations de la société -->
+    <footer class="mt-8 border-t pt-4">
+        <h3 class="font-bold">Manga's Store</h3>
+        <p>Adresse : 92, Rue de Bulungu, Kinshasa-Makala</p>
+        <p>Téléphone : +24397850028</p>
+        <p>Téléphone : +243813091409</p>
+        <p>Email : contact@mangasstore.com</p> <!-- Ajoutez l'email si nécessaire -->
+    </footer>
+</div>
 
 </body>
 </html>
