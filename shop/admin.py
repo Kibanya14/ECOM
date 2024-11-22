@@ -4,8 +4,8 @@ from django.utils.safestring import mark_safe
 from .models import Category, Product, Commande
 import json
 
-admin.site.site_header = "Administration Mangas Store"
-admin.site.site_title = "Mangas Store Admin"
+admin.site.site_header = "Administration Manga Store"
+admin.site.site_title = "Manga Store Admin"
 admin.site.index_title = "Tableau de bord"
  
 @admin.register(Category)
